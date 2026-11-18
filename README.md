@@ -74,6 +74,8 @@ Copy `.env.example` to `.env.local`. With nothing set, the app uses the browser'
 | Speech-to-text, local | bundled `scripts/local-whisper-server.py` (faster-whisper) | `STT_PROVIDER=whisper-local` |
 | Speech-to-text, hosted | Groq Whisper (free tier) | `STT_PROVIDER=groq STT_API_KEY=…` |
 
+The Ollama and local-Whisper paths are verified end to end; the recorded model response is checked in under `tests/e2e/recorded/`. The hosted presets use each provider's documented OpenAI-compatible endpoint and go through the same client, but I didn't run them, since that needs keys.
+
 Measured on an 8-core CPU box with no GPU:
 - Whisper `base.en` transcribed the 22 s sample in about 0.8 s.
 - Qwen2.5-3B (Ollama, GGUF Q4) parsed it in 21–38 s. That's why LLM requests have their own timeout and fall back to the rule engine instead of hanging the outbox.
