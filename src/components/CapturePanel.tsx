@@ -48,6 +48,13 @@ export function CapturePanel() {
     return ctxRef.current;
   };
 
+  // Status messages fade out on their own.
+  useEffect(() => {
+    if (!info) return;
+    const id = window.setTimeout(() => setInfo(null), 6000);
+    return () => window.clearTimeout(id);
+  }, [info]);
+
   // Elapsed timer + hard stop at the max length.
   useEffect(() => {
     if (phase !== "recording" && phase !== "playing") return;

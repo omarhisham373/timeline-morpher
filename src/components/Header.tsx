@@ -22,7 +22,7 @@ export function Header() {
   }, [dispatch]);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-ink-700 bg-ink-900/85 backdrop-blur">
+    <header className="z-30 border-b md:sticky md:top-0 border-ink-700 bg-ink-900/85 backdrop-blur">
       <div className="mx-auto flex max-w-[1500px] flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3">
         <Logo />
         <div className="hidden min-w-0 flex-1 md:block">

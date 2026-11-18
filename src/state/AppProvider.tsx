@@ -97,9 +97,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AppContextValue>(() => {
     const { engine, net: monitor } = runtimeOrNull() ?? {};
     const closeReview = async (draft: ReviewDraft) => {
-      // Mark first so the auto-open logic doesn't immediately reopen it.
+      // Mark first so the auto-open logic doesn't reopen it, then move on to the
+      // next synced note (e.g. several notes captured offline).
       if (draft.outboxId) await engine?.update(draft.outboxId, { reviewed: true });
-      setReview((current) => (current?.id === draft.id ? null : current));
+      const next = engine ? nextUnreviewed(await engine.list()) : undefined;
+      setReview((current) => (current?.id === draft.id ? (next ? draftFromItem(next) : null) : current));
     };
     return {
       schedule,

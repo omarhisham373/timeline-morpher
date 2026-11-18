@@ -26,7 +26,9 @@ export interface ProviderConfig {
   model: string;
 }
 
-function resolve(prefix: "LLM" | "STT", env: NodeJS.ProcessEnv): ProviderConfig | null {
+type Env = Record<string, string | undefined>;
+
+function resolve(prefix: "LLM" | "STT", env: Env): ProviderConfig | null {
   const provider = (env[`${prefix}_PROVIDER`] ?? "").trim().toLowerCase();
   if (!provider || provider === "none" || provider === "local") return null;
   const preset = PRESETS[provider];
@@ -38,5 +40,5 @@ function resolve(prefix: "LLM" | "STT", env: NodeJS.ProcessEnv): ProviderConfig 
   return { provider, baseUrl: baseUrl.replace(/\/$/, ""), apiKey, model };
 }
 
-export const getLlmConfig = (env = process.env) => resolve("LLM", env);
-export const getSttConfig = (env = process.env) => resolve("STT", env);
+export const getLlmConfig = (env: Env = process.env) => resolve("LLM", env);
+export const getSttConfig = (env: Env = process.env) => resolve("STT", env);

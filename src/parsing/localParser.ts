@@ -23,7 +23,8 @@ const PRONOUN = /\b(it|that|this|they|them|those)\b/i;
 const REASON_LEAD = /^(they'?re|it'?s|because|cause|since|due to|we'?re|there'?s)\b/i;
 
 // "A ... can't start until B", "A is waiting on B", "A depends on B", "A needs B done"
-const A_AFTER_B = /\b(?:can'?t|cannot|can not|won'?t|couldn'?t|not able to|unable to)\s+(?:even\s+)?(?:start|begin|go|proceed|move|happen|kick off|get going)\b.*\b(?:until|till|til|before|without)\b|\bwait(?:s|ing)?\s+(?:on|for)\b|\b(?:depends|depending|dependent|relies|relying)\s+on\b|\bblocked\s+by\b|\bneeds?\b|\bafter\b|\bbehind\b/i;
+const A_AFTER_B = /\b(?:can'?t|cannot|can not|won'?t|couldn'?t|not able to|unable to)\s+(?:even\s+)?(?:start|begin|go|proceed|move|happen|kick off|get going)\b.*\b(?:until|till|til|before|without)\b|\bwait(?:s|ing)?\s+(?:on|for)\b|\b(?:depends|depending|dependent|relies|relying)\s+on\b|\bblocked\s+by\b|\bneeds?\b|\bafter\b/i;
+const LEAD_NEED = /\b(?:need|needs|has to|have to|gotta|got to|must|want)\b/i;
 // "B has to be done before A", "B needs to go in first, then A"
 const B_BEFORE_A = /\b(?:has to|have to|needs? to|must|gotta|got to|should)\b.*\b(?:before|first|ahead of)\b/i;
 
@@ -183,19 +184,20 @@ export function parseFieldNote(transcript: string, project: Project): ParsedFiel
 function detectDependency(clause: Clause, mentions: TaskMention[], hedge: number): DependencyItem | null {
   const [a, b] = mentions;
   const between = clause.text.slice(a.end - clause.start, b.start - clause.start).toLowerCase();
-  const tail = clause.text.slice(b.end - clause.start).toLowerCase();
+  const lead = clause.text.slice(0, a.start - clause.start).toLowerCase();
+  // "Framing needs two more days and roofing…" is a delay, not a link: a duration
+  // between the two tasks only makes sense as a lag ("two days after").
+  const durationBetween = clause.durations.some((d) => d.absStart > a.end && d.absStart < b.start);
+  if (durationBetween && !/\bafter\b/.test(between)) return null;
   let taskId: TaskId | null = null;
   let dependsOn: TaskId | null = null;
-  if (B_BEFORE_A.test(between)) {
+  // "B has to be done before A" / "we need B finished before A"
+  if (B_BEFORE_A.test(between) || (LEAD_NEED.test(lead) && /\b(?:before|first|ahead of)\b/.test(between))) {
     taskId = b.taskId;
     dependsOn = a.taskId;
   } else if (A_AFTER_B.test(between)) {
     taskId = a.taskId;
     dependsOn = b.taskId;
-  } else if (/\b(?:first|before)\b/.test(tail) && /\b(?:need|needs|has to|have to|gotta)\b/.test(clause.text.slice(0, a.start - clause.start).toLowerCase())) {
-    // "need the inspection before drywall" → drywall depends on inspection
-    taskId = b.taskId;
-    dependsOn = a.taskId;
   }
   if (!taskId || !dependsOn) return null;
   // A duration inside the clause is a lag: "framing two days after the pour".

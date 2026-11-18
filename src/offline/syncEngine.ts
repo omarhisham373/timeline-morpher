@@ -75,6 +75,10 @@ export class SyncEngine {
     return this.drain();
   }
 
+  list(): Promise<OutboxItem[]> {
+    return this.o.store.list();
+  }
+
   async update(id: string, patch: Partial<OutboxItem>) {
     const item = await this.o.store.get(id);
     if (!item) return;

@@ -65,7 +65,7 @@ export function Switch({ checked, onChange, label, description, testId }: { chec
       </button>
       <span>
         <span className="text-white">{label}</span>
-        {description && <span className="block text-[10px] text-faint">{description}</span>}
+        {description && <span className="hidden text-[10px] text-faint sm:block">{description}</span>}
       </span>
     </label>
   );

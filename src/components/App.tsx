@@ -1,5 +1,6 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import { AppProvider, useApp } from "@/state/AppProvider";
 import { ActivityLog } from "./ActivityLog";
 import { CapturePanel } from "./CapturePanel";
@@ -21,10 +22,14 @@ export function App() {
   );
 }
 
+const noopSubscribe = () => () => {};
+
 function Main() {
   const { review } = useApp();
+  // true once hydrated: lets tests (and users of assistive tech) know the controls are live.
+  const ready = useSyncExternalStore(noopSubscribe, () => true, () => false);
   return (
-    <main className="mx-auto grid max-w-[1500px] gap-4 px-4 py-5 lg:grid-cols-[minmax(320px,400px)_minmax(0,1fr)]">
+    <main data-ready={ready ? "true" : "false"} aria-busy={!ready} className="mx-auto grid max-w-[1500px] gap-4 px-4 py-5 lg:grid-cols-[minmax(320px,400px)_minmax(0,1fr)]">
       <div className="space-y-4 lg:sticky lg:top-[76px] lg:self-start">
         <Intro />
         <CapturePanel />

@@ -114,11 +114,11 @@ export function Gantt(props: GanttProps) {
               ))}
               {showBaseline && baseline.finish !== schedule.finish && (
                 <div className="absolute top-0 bottom-0 border-l border-dashed border-mute/60" style={{ left: baseline.finish * dw }}>
-                  <span className="absolute top-0 right-1 rounded bg-ink-700 px-1 text-[9px] whitespace-nowrap text-mute">planned</span>
+                  <span className="absolute right-1 bottom-1 rounded bg-ink-700 px-1 text-[9px] whitespace-nowrap text-mute">planned</span>
                 </div>
               )}
-              <motion.div className="absolute top-0 bottom-0 border-l-2 border-amber" animate={{ left: schedule.finish * dw }} transition={{ type: "spring", stiffness: 120, damping: 20, delay: reduceMotion ? 0 : 0.5 }}>
-                <span className="absolute bottom-1 right-1 rounded bg-amber px-1 text-[9px] font-semibold whitespace-nowrap text-ink-950" data-testid="finish-marker">
+              <motion.div className="absolute top-0 bottom-0 z-10 border-l-2 border-amber" initial={false} animate={{ left: schedule.finish * dw }} transition={{ type: "spring", stiffness: 120, damping: 20, delay: reduceMotion ? 0 : 0.5 }}>
+                <span className="absolute top-1 right-1 rounded bg-amber px-1 text-[9px] font-semibold whitespace-nowrap text-ink-950 shadow" data-testid="finish-marker">
                   finish {formatShort(workdayToDate(project.startDate, Math.max(0, Math.ceil(schedule.finish) - 1)))}
                 </span>
               </motion.div>
@@ -158,6 +158,7 @@ export function Gantt(props: GanttProps) {
                     {showSlack && s.slack > 0 && (
                       <motion.div
                         className="absolute top-[21px] h-0 border-t border-dashed border-absorb/60"
+                        initial={false}
                         animate={{ left: s.ef * dw, width: s.slack * dw }}
                         transition={{ type: "spring", stiffness: 140, damping: 22, delay: stagger(task.id) }}
                         aria-hidden="true"

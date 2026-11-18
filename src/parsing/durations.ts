@@ -48,6 +48,9 @@ const FULL_DAY_RE = /\b(?:rained\s+out|washed\s+out|lost\s+(?:the\s+)?(?:whole\s
 export function extractDurations(text: string): DurationMatch[] {
   const lower = text.toLowerCase();
   const found: DurationMatch[] = [];
+  // Idioms first so "half a day" isn't read as "a day".
+  for (const m of lower.matchAll(HALF_DAY_RE)) pushIfFree(found, { days: 0.5, certainty: 0.8, start: m.index!, end: m.index! + m[0].length, text: m[0] });
+  for (const m of lower.matchAll(FULL_DAY_RE)) pushIfFree(found, { days: 1, certainty: 0.75, start: m.index!, end: m.index! + m[0].length, text: m[0] });
   for (const m of lower.matchAll(DURATION_RE)) {
     const qty = m[1];
     const numeric = /^\d/.test(qty);
@@ -60,10 +63,8 @@ export function extractDurations(text: string): DurationMatch[] {
     if (unit.startsWith("week")) days = n * 5;
     else if (unit.startsWith("h")) days = n >= 24 ? n / 24 : Math.max(0.5, Math.round((n / 8) * 2) / 2);
     else days = n;
-    found.push({ days: round(days), certainty, start: m.index!, end: m.index! + m[0].length, text: text.slice(m.index!, m.index! + m[0].length) });
+    pushIfFree(found, { days: round(days), certainty, start: m.index!, end: m.index! + m[0].length, text: text.slice(m.index!, m.index! + m[0].length) });
   }
-  for (const m of lower.matchAll(HALF_DAY_RE)) pushIfFree(found, { days: 0.5, certainty: 0.8, start: m.index!, end: m.index! + m[0].length, text: m[0] });
-  for (const m of lower.matchAll(FULL_DAY_RE)) pushIfFree(found, { days: 1, certainty: 0.75, start: m.index!, end: m.index! + m[0].length, text: m[0] });
   return found.sort((a, b) => a.start - b.start);
 }
 

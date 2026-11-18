@@ -23,6 +23,7 @@ export function normaliseQuotes(s: string): string {
 
 export function stem(word: string): string {
   let w = word.replace(/'(s|re|ll|ve|d|m)$/, "");
+  if (w.length > 5 && /(sh|ch|x|ss)es$/.test(w)) return w.slice(0, -2); // finishes → finish
   if (w.length > 4 && w.endsWith("s") && !w.endsWith("ss")) w = w.slice(0, -1);
   return w;
 }
