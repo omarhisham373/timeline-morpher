@@ -5,7 +5,7 @@ import "server-only";
  * vars the app runs entirely on the local parser and browser speech APIs.
  *
  *   LLM_PROVIDER = openai | gemini | groq | openrouter | ollama | custom
- *   LLM_API_KEY, LLM_MODEL, LLM_BASE_URL (override)
+ *   LLM_API_KEY, LLM_MODEL, LLM_BASE_URL (override), LLM_TIMEOUT_MS
  *   STT_PROVIDER = openai | groq | custom   STT_API_KEY, STT_MODEL, STT_BASE_URL
  *
  * Gemini, Groq and Ollama all have free options (Ollama runs locally).
@@ -24,6 +24,8 @@ export interface ProviderConfig {
   baseUrl: string;
   apiKey?: string;
   model: string;
+  /** Request timeout; local CPU models (Ollama) need longer than hosted APIs. */
+  timeoutMs: number;
 }
 
 type Env = Record<string, string | undefined>;
@@ -37,7 +39,8 @@ function resolve(prefix: "LLM" | "STT", env: Env): ProviderConfig | null {
   const apiKey = env[`${prefix}_API_KEY`] ?? (prefix === "STT" ? env.LLM_API_KEY : undefined);
   if (!baseUrl || !model) return null;
   if (!apiKey && !preset?.keyless && provider !== "custom") return null;
-  return { provider, baseUrl: baseUrl.replace(/\/$/, ""), apiKey, model };
+  const timeoutMs = Number(env[`${prefix}_TIMEOUT_MS`]) || (preset?.keyless ? 90_000 : 15_000);
+  return { provider, baseUrl: baseUrl.replace(/\/$/, ""), apiKey, model, timeoutMs };
 }
 
 export const getLlmConfig = (env: Env = process.env) => resolve("LLM", env);

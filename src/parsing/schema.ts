@@ -56,9 +56,26 @@ export type ParseNote = z.infer<typeof NoteSchema>;
 
 export type ParseEngine = "local" | "llm";
 
+/** Per-item trust signal from the LLM ↔ rule-engine cross-check (see reconcile.ts). */
+export interface ItemCheck {
+  agreement: "agree" | "differs" | "llm_only" | "rules_only";
+  evidenceVerified: boolean;
+  detail?: string;
+  /** When the engines differ on a number: the rule engine's reading. */
+  rulesValue?: number;
+}
+
+/** Per-item trust signals (see reconcile.ts). */
+export interface ParseChecks {
+  items: ItemCheck[];
+  suggestions: { item: ParsedItem; detail: string }[];
+}
+
 /** API envelope returned by POST /api/parse. */
 export interface ParseResponse {
   result: ParsedFieldNote;
+  /** Present when an LLM answered: cross-check against the rule engine. */
+  checks?: ParseChecks;
   engine: ParseEngine;
   model?: string;
   /** Present when an LLM was configured but we fell back to the local parser. */

@@ -1,12 +1,14 @@
 import { applyChanges } from "@/domain/changes";
 import type { Project } from "@/domain/types";
-import { ParsedItemSchema, formatZodError, toScheduleChange, type ParsedItem, type ParseNote, type ParseResponse } from "@/parsing/schema";
+import { ParsedItemSchema, formatZodError, toScheduleChange, type ItemCheck, type ParsedItem, type ParseNote, type ParseResponse } from "@/parsing/schema";
 import type { CaptureSource } from "@/offline/types";
 
 export interface DraftItem {
   key: string;
   include: boolean;
   item: ParsedItem;
+  /** Trust signal from the LLM ↔ rule-engine cross-check, when an LLM was used. */
+  check?: ItemCheck;
 }
 
 export interface ReviewDraft {
@@ -27,7 +29,21 @@ export function createDraft(id: string, transcript: string, source: CaptureSourc
     response,
     outboxId,
     notes: response.result.notes,
-    items: response.result.items.map((item, i) => ({ key: `${id}-${i}`, include: true, item })),
+    items: [
+      ...response.result.items.map((item, i) => ({
+        key: `${id}-${i}`,
+        // Unverifiable quotes start unticked: a human has to opt in.
+        include: response.checks?.items[i]?.evidenceVerified ?? true,
+        item,
+        check: response.checks?.items[i],
+      })),
+      ...(response.checks?.suggestions ?? []).map((s, i) => ({
+        key: `${id}-s${i}`,
+        include: false,
+        item: s.item,
+        check: { agreement: "rules_only" as const, evidenceVerified: true, detail: s.detail },
+      })),
+    ],
   };
 }
 

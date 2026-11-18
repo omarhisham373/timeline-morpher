@@ -1,6 +1,7 @@
 import "server-only";
 import type { Project } from "@/domain/types";
 import { parseFieldNote } from "@/parsing/localParser";
+import { reconcile } from "@/parsing/reconcile";
 import type { ParseResponse } from "@/parsing/schema";
 import { getLlmConfig, type ProviderConfig } from "./llmConfig";
 import { parseWithLlm } from "./llmParser";
@@ -18,8 +19,16 @@ export async function parseNote(
   const started = Date.now();
   if (config && transcript.trim()) {
     try {
-      const result = await llm(transcript, project, config);
-      return { result, engine: "llm", model: `${config.provider}:${config.model}`, latencyMs: Date.now() - started };
+      const llmResult = await llm(transcript, project, config);
+      // Cross-check with the deterministic engine (≈1 ms) so the reviewer sees where they disagree.
+      const { result, checks, suggestions } = reconcile(transcript, llmResult, parseFieldNote(transcript, project));
+      return {
+        result,
+        checks: { items: checks, suggestions: suggestions.map((s) => ({ item: s.item, detail: s.check.detail ?? "" })) },
+        engine: "llm",
+        model: `${config.provider}:${config.model}`,
+        latencyMs: Date.now() - started,
+      };
     } catch (err) {
       return {
         result: parseFieldNote(transcript, project),

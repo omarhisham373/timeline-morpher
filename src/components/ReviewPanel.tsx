@@ -159,6 +159,7 @@ function ItemRow({ draft, project, onChange, onRemove, onHover }: { draft: Draft
           </>
         )}
         <div className="ml-auto flex items-center gap-2">
+          {draft.check && <CheckBadge check={draft.check} />}
           <ConfidenceMeter value={item.confidence} />
           <Button size="sm" variant="ghost" onClick={onRemove} aria-label="Remove change">
             ✕
@@ -168,12 +169,42 @@ function ItemRow({ draft, project, onChange, onRemove, onHover }: { draft: Draft
       <p className="mt-1.5 text-xs text-faint">
         “{item.evidence}”{item.reason && item.reason !== item.evidence && <span className="text-mute"> · {item.reason}</span>}
       </p>
+      {draft.check?.detail && draft.check.agreement !== "agree" && (
+        <p className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-amber">
+          {draft.check.detail}
+          {draft.check.rulesValue !== undefined && (
+            <button
+              type="button"
+              className="focus-ring rounded border border-amber/40 px-1.5 py-px text-amber hover:bg-amber/10"
+              onClick={() => onChange({ ...draft, check: { ...draft.check!, agreement: "agree", detail: "Reviewer took the rule engine's value" }, item: { ...item, ...(item.type === "delay" ? { delayDays: draft.check!.rulesValue! } : { lagDays: draft.check!.rulesValue! }) } as ParsedItem })}
+            >
+              Use {draft.check.rulesValue}
+            </button>
+          )}
+        </p>
+      )}
       {problem && (
         <p className="mt-1 text-xs text-amber" role="note">
           Can&apos;t apply: {problem}
         </p>
       )}
     </li>
+  );
+}
+
+const AGREEMENT: Record<NonNullable<DraftItem["check"]>["agreement"], { tone: "green" | "amber" | "red" | "blue"; label: string }> = {
+  agree: { tone: "green", label: "✓ engines agree" },
+  differs: { tone: "amber", label: "≠ engines differ" },
+  llm_only: { tone: "amber", label: "LLM only" },
+  rules_only: { tone: "blue", label: "Rule engine only" },
+};
+
+function CheckBadge({ check }: { check: NonNullable<DraftItem["check"]> }) {
+  const a = check.evidenceVerified ? AGREEMENT[check.agreement] : { tone: "red" as const, label: "⚠ quote not in transcript" };
+  return (
+    <span title={check.detail} data-testid="check-badge">
+      <Badge tone={a.tone}>{a.label}</Badge>
+    </span>
   );
 }
 

@@ -5,7 +5,7 @@ import { getLlmConfig, getSttConfig } from "@/server/llmConfig";
 import { LlmError, parseWithLlm } from "@/server/llmParser";
 import { parseNote } from "@/server/parseService";
 
-const config = { provider: "test", baseUrl: "https://llm.test/v1", apiKey: "k", model: "m" };
+const config = { provider: "test", baseUrl: "https://llm.test/v1", apiKey: "k", model: "m", timeoutMs: 5_000 };
 const known = new Set(SAMPLE_PROJECT.tasks.map((t) => t.id));
 const good = {
   summary: "Rebar 2 days late",
