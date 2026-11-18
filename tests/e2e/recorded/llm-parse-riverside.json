@@ -1,0 +1,71 @@
+{
+  "result": {
+    "summary": "Rebar delivery delayed; slab pour now 2 days behind; electrical rough-in 3 days behind; HVAC ductwork needed before plumbing can start",
+    "items": [
+      {
+        "type": "delay",
+        "taskId": "rebar",
+        "delayDays": 2,
+        "reason": "Rebar delivery late",
+        "category": "materials",
+        "confidence": 0.9,
+        "evidence": "we're like two days behind on slab rebar",
+        "assumedDuration": false
+      },
+      {
+        "type": "dependency",
+        "taskId": "plumbing",
+        "dependsOnTaskId": "hvac",
+        "lagDays": 3,
+        "reason": "HVAC ductwork needed before plumbing can start",
+        "confidence": 0.9,
+        "evidence": "Plumbing can't start until the HVAC ductwork is in"
+      }
+    ],
+    "notes": [
+      {
+        "text": "slab pour now 2 days behind",
+        "kind": "consequence",
+        "detail": "Slab pour follows rebar"
+      },
+      {
+        "text": "electrical rough-in 3 days behind",
+        "kind": "consequence",
+        "detail": "Electrical rough-in follows plumbing"
+      }
+    ]
+  },
+  "checks": {
+    "items": [
+      {
+        "agreement": "agree",
+        "detail": "Both engines agree · quote taken from the transcript (LLM paraphrased)",
+        "evidenceVerified": true
+      },
+      {
+        "agreement": "differs",
+        "detail": "Rule engine read a 0-day lag",
+        "rulesValue": 0,
+        "evidenceVerified": true
+      }
+    ],
+    "suggestions": [
+      {
+        "item": {
+          "type": "delay",
+          "taskId": "electrical",
+          "delayDays": 3,
+          "reason": "Electrician's crew didn't show this morning — electrical rough-in is three days behind",
+          "category": "labor",
+          "confidence": 0.99,
+          "evidence": "so electrical rough-in is three days behind",
+          "assumedDuration": false
+        },
+        "detail": "The LLM missed this; the rule engine heard it"
+      }
+    ]
+  },
+  "engine": "llm",
+  "model": "ollama:qwen2.5-3b-local",
+  "latencyMs": 22135
+}

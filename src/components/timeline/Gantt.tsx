@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
-import { useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { formatShort, formatWeekday, pluralDays, workdayToDate } from "@/domain/calendar";
 import type { ImpactReport } from "@/domain/impact";
 import type { Project, Schedule, TaskId } from "@/domain/types";
@@ -77,11 +77,25 @@ export function Gantt(props: GanttProps) {
     if (!t || t.kind === "unchanged") return null;
     return t;
   };
+  // After a change lands, bring the first affected bar into view — on a phone
+  // the timeline scrolls horizontally and the ripple could start off-screen.
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!rippleSeq || !impact || !el || el.scrollWidth <= el.clientWidth) return;
+    const firstHit = Object.entries(impact.tasks)
+      .filter(([, t]) => t.kind === "direct" || t.kind === "propagated")
+      .map(([id]) => schedule.tasks[id]?.es ?? Infinity)
+      .reduce((a, b) => Math.min(a, b), Infinity);
+    if (Number.isFinite(firstHit)) el.scrollTo({ left: Math.max(0, firstHit * dw - dw * 2), behavior: reduceMotion ? "auto" : "smooth" });
+    // Only on a new ripple, not on every resize.
+  }, [rippleSeq]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const stagger = (id: TaskId) => (reduceMotion ? 0 : (ripple(id)?.depth ?? 0) * 0.14);
 
   return (
     <div ref={wrapRef} className="w-full">
-      <div className="scroll-thin overflow-x-auto" onKeyDown={onKeyDown}>
+      <div ref={scrollRef} className="scroll-thin overflow-x-auto" onKeyDown={onKeyDown}>
         <div className="relative" style={{ width: labelW + trackW, minWidth: "100%" }}>
           {/* Axis */}
           <div className="sticky top-0 z-20 flex border-b border-ink-600 bg-ink-850" style={{ height: AXIS_H }}>

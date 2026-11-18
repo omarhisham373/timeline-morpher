@@ -32,6 +32,7 @@ function useNow(active: boolean) {
 export function OutboxPanel() {
   const { outbox, online, retryItem, removeItem, openReview, review, storageKind, completeTranscript } = useApp();
   const items = [...outbox].reverse();
+  const done = outbox.filter((i) => i.status === "synced" && i.reviewed);
   const now = useNow(outbox.some((i) => i.status === "queued"));
 
   return (
@@ -39,7 +40,16 @@ export function OutboxPanel() {
       id="outbox"
       eyebrow="2 · Sync"
       title="Outbox"
-      actions={<Badge tone={storageKind === "indexeddb" ? "green" : "amber"}>{storageKind === "indexeddb" ? "IndexedDB" : "Memory only"}</Badge>}
+      actions={
+        <>
+          {done.length > 1 && (
+            <Button size="sm" variant="ghost" onClick={() => done.forEach((i) => removeItem(i.id))} data-testid="clear-reviewed">
+              Clear {done.length} reviewed
+            </Button>
+          )}
+          <Badge tone={storageKind === "indexeddb" ? "green" : "amber"}>{storageKind === "indexeddb" ? "IndexedDB" : "Memory only"}</Badge>
+        </>
+      }
     >
       {items.length === 0 ? (
         <p className="px-4 py-5 text-xs text-mute">Every note is saved on this device first, then synced. Toggle “Simulate offline” and record to watch it queue.</p>
