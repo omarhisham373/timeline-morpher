@@ -19,11 +19,11 @@ Use a fresh profile, or click **Reset** first. Speak naturally; the bracketed li
 
 **0:40–0:55 · The ripple**
 [Back to **Proposed changes** → **Apply**. Watch the bars turn red and the knock-on ripple. Point at the finish marker.]
-> "Apply, and it re-runs a real critical-path calculation. Reported delays go red, everything they push turns rust in dependency order, and the finish moves from Dec 28 to Jan 4. Roofing has float, so part of its slip is absorbed."
+> "Apply, and it re-runs a real critical-path calculation. Reported delays go red, everything they push turns rust in dependency order, and the finish moves from Dec 28 to Jan 4. Roofing slips too, but it has float, so it doesn't touch the finish date."
 
 **0:55–1:05 · Why did this move?**
 [Click the **MEP inspection** bar. The inspector shows the cause chain and the quote.]
-> "Click any task and it traces the delay back to its source: rebar, the slab, framing, plumbing, and the foreman's own words."
+> "Click any task and it traces the delay back to its source: task by task to the root delay, then to the foreman's own words."
 
 **1:05–1:20 · Offline**
 [Toggle **Simulate offline**. Type "MEP inspection is a day behind" and save it, so it shows as Queued. Toggle back online and it syncs on its own and opens for review.]
@@ -37,6 +37,6 @@ Use a fresh profile, or click **Reset** first. Speak naturally; the bracketed li
 
 ### Likely interview questions, and short answers
 
-- **Why both an LLM and a rule parser?** The rules are instant, free, deterministic and always available offline-adjacent. The LLM covers phrasing the rules miss. Disagreement between the two is the most useful signal you can give a reviewer. A 3B model invented a lag in testing, and the cross-check is what caught it.
+- **Why both an LLM and a rule parser?** The rules are instant, free, deterministic and always available. The LLM covers phrasing the rules miss. Disagreement between the two is the most useful signal you can give a reviewer. A 3B model invented a lag in testing, and the cross-check is what caught it.
 - **What happens if two tabs sync at once, or the tab dies mid-request?** Web Locks give single-flight drains. Items stuck in "syncing" are re-queued on start. The Idempotency-Key makes a replayed request safe.
 - **How does propagation work?** A CPM forward and backward pass over a working-day calendar. A task's delay extends its effective duration. Impact is the difference against the baseline, and each task records its driving predecessor, which is what the cause chain follows.
