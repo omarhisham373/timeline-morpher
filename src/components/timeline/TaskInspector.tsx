@@ -3,7 +3,9 @@
 import { formatShort, pluralDays, workdayToDate } from "@/domain/calendar";
 import type { ImpactReport } from "@/domain/impact";
 import type { Project, Schedule, TaskId } from "@/domain/types";
+import type { ActivityEntry } from "@/state/scheduleReducer";
 import { Badge, Button } from "../ui/primitives";
+import { sourcesFor } from "./model";
 
 /** "Trace every delay to its source": dates, float, links and the causal chain for one task. */
 export function TaskInspector({
@@ -12,6 +14,7 @@ export function TaskInspector({
   schedule,
   baseSchedule,
   cumulative,
+  activity,
   onClose,
   onSelect,
 }: {
@@ -20,6 +23,7 @@ export function TaskInspector({
   schedule: Schedule;
   baseSchedule: Schedule;
   cumulative: ImpactReport;
+  activity: ActivityEntry[];
   onClose: () => void;
   onSelect: (id: TaskId) => void;
 }) {
@@ -31,6 +35,8 @@ export function TaskInspector({
   const d = (offset: number) => formatShort(workdayToDate(project.startDate, offset));
   const end = (ef: number, es: number) => d(Math.max(es, Math.ceil(ef) - 1));
   const impact = cumulative.tasks[taskId];
+  const root = impact?.kind === "propagated" ? impact.causeChain[0] : taskId;
+  const sources = impact && impact.kind !== "unchanged" ? sourcesFor(root, activity, name) : [];
   const successors = project.tasks.filter((t) => t.dependsOn.some((x) => x.taskId === taskId));
 
   return (
@@ -99,6 +105,18 @@ export function TaskInspector({
             <p className="text-emerald-300">A predecessor slipped, but this task&apos;s float absorbed it ({pluralDays(impact.slackLost)} of float used).</p>
           ) : (
             <p className="text-mute">On plan.</p>
+          )}
+          {sources.length > 0 && (
+            <ul className="mt-2 space-y-1 border-l-2 border-delay/60 pl-2" data-testid="source-quote">
+              {sources.slice(0, 3).map((src, i) => (
+                <li key={i} className="text-mute">
+                  {src.quote ? <span className="text-white italic">“{src.quote}”</span> : <span className="text-white">Manual edit</span>}
+                  <span className="block text-[10px] text-faint">
+                    {name(root)} {src.label} · {new Date(src.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  </span>
+                </li>
+              ))}
+            </ul>
           )}
           {successors.length > 0 && (
             <p className="mt-2 text-faint">

@@ -3,6 +3,27 @@ import { computeSchedule } from "@/domain/cpm";
 import { analyzeImpact, type ImpactReport } from "@/domain/impact";
 import type { Project, Schedule, TaskId } from "@/domain/types";
 
+import type { ActivityEntry } from "@/state/scheduleReducer";
+
+export interface ChangeSource {
+  at: number;
+  label: string;
+  quote?: string;
+}
+
+/** The field-note quotes that changed this task, newest first: the end of every "why?" chain. */
+export function sourcesFor(taskId: TaskId, activity: ActivityEntry[], name: (id: TaskId) => string): ChangeSource[] {
+  return activity.flatMap((entry) =>
+    entry.changes
+      .filter((c) => c.taskId === taskId)
+      .map((c) => ({
+        at: entry.at,
+        label: c.kind === "delay" ? `+${c.days}d` : `now waits on ${name(c.dependsOnTaskId)}${c.lagDays ? ` +${c.lagDays}d` : ""}`,
+        quote: c.evidence,
+      })),
+  );
+}
+
 export type BarStatus = "on-plan" | "delayed" | "pushed";
 
 /** Tasks whose own inputs differ from the baseline (delay or new link). */

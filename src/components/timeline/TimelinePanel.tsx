@@ -88,7 +88,7 @@ export function TimelinePanel() {
         <span className="ml-auto hidden text-faint sm:inline">Click a bar or use ↑ ↓ + Enter to inspect</span>
       </div>
 
-      {selectedId && <TaskInspector taskId={selectedId} project={project} schedule={schedule} baseSchedule={baseSchedule} cumulative={cumulative} onClose={() => setSelectedId(null)} onSelect={setSelectedId} />}
+      {selectedId && <TaskInspector taskId={selectedId} project={project} schedule={schedule} baseSchedule={baseSchedule} cumulative={cumulative} activity={state.activity} onClose={() => setSelectedId(null)} onSelect={setSelectedId} />}
     </Card>
   );
 }

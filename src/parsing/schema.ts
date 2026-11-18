@@ -119,6 +119,6 @@ export function formatZodError(error: z.ZodError): string {
 
 export function toScheduleChange(item: ParsedItem): ScheduleChange {
   return item.type === "delay"
-    ? { kind: "delay", taskId: item.taskId, days: item.delayDays, reason: item.reason }
-    : { kind: "dependency", taskId: item.taskId, dependsOnTaskId: item.dependsOnTaskId, lagDays: item.lagDays, reason: item.reason };
+    ? { kind: "delay", taskId: item.taskId, days: item.delayDays, reason: item.reason, evidence: item.evidence }
+    : { kind: "dependency", taskId: item.taskId, dependsOnTaskId: item.dependsOnTaskId, lagDays: item.lagDays, reason: item.reason, evidence: item.evidence };
 }

@@ -91,6 +91,8 @@ test("keyboard: navigate bars and inspect why a task moved", async ({ page }) =>
   const inspector = page.getByTestId("inspector");
   await expect(inspector).toContainText("MEP inspection");
   await expect(page.getByTestId("cause-chain")).toContainText("Slab rebar");
+  // …all the way back to the words that caused it.
+  await expect(page.getByTestId("source-quote")).toContainText("“Slab rebar is two days behind”");
   await page.waitForTimeout(300);
   await page.screenshot({ path: `${SHOTS}/06-inspector-trace.png`, fullPage: true });
   await page.keyboard.press("Escape");

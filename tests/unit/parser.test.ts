@@ -60,6 +60,8 @@ describe("durations", () => {
     ["a week", 5],
     ["two weeks", 10],
     ["48 hours", 2],
+    ["36 hours", 1.5],
+    ["a couple of weeks", 10],
     ["four hours", 0.5],
     ["another day", 1],
     ["lost the morning", 0.5],

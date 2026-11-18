@@ -6,8 +6,8 @@ import type { Project, TaskId } from "./types";
  * the parser's zod schema (src/parsing/schema.ts) maps onto it.
  */
 export type ScheduleChange =
-  | { kind: "delay"; taskId: TaskId; days: number; reason: string }
-  | { kind: "dependency"; taskId: TaskId; dependsOnTaskId: TaskId; lagDays: number; reason: string };
+  | { kind: "delay"; taskId: TaskId; days: number; reason: string; evidence?: string }
+  | { kind: "dependency"; taskId: TaskId; dependsOnTaskId: TaskId; lagDays: number; reason: string; evidence?: string };
 
 export interface RejectedChange {
   change: ScheduleChange;
