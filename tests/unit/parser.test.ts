@@ -97,6 +97,16 @@ describe("speech-to-text robustness", () => {
   it("does not fuzzy-match everyday words", () => {
     expect(matcher.find("at this point we should start")).toEqual([]);
   });
+
+  it("survives a real Whisper (base.en) transcript of the sample clip, mis-hearings included", () => {
+    // Verbatim output of scripts/local-whisper-server.py for public/samples/field-note-riverside.mp3:
+    // "we're" → "where", "they're" → "their", "Roofing's fine" → "Roofings find".
+    const whisper =
+      "Hey, it's Mike on the Riverside job. So, the rebar delivery showed up late again where like two days behind on slab rebar, and the pour in area B is going to slip with it. Electrician's crew didn't show this morning, so electrical rough-in is three days behind. Oh, and plumbing can't start until the HVAC ductwork is in their fighting for the same ceiling space. Roofings find no delay there.";
+    const r = parseFieldNote(whisper, SAMPLE_PROJECT);
+    expect(r.items.map((i) => (i.type === "delay" ? `${i.taskId}+${i.delayDays}` : `${i.taskId}<-${i.dependsOnTaskId}`))).toEqual(["rebar+2", "electrical+3", "plumbing<-hvac"]);
+    expect(r.notes.map((n) => n.kind).sort()).toEqual(["consequence", "on_track"]);
+  });
 });
 
 describe("delay extraction", () => {

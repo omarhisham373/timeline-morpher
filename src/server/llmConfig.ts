@@ -6,9 +6,10 @@ import "server-only";
  *
  *   LLM_PROVIDER = openai | gemini | groq | openrouter | ollama | custom
  *   LLM_API_KEY, LLM_MODEL, LLM_BASE_URL (override), LLM_TIMEOUT_MS
- *   STT_PROVIDER = openai | groq | custom   STT_API_KEY, STT_MODEL, STT_BASE_URL
+ *   STT_PROVIDER = openai | groq | whisper-local | custom   STT_API_KEY, STT_MODEL, STT_BASE_URL
  *
- * Gemini, Groq and Ollama all have free options (Ollama runs locally).
+ * Gemini, Groq and Ollama all have free options; Ollama and whisper-local
+ * (scripts/local-whisper-server.py) run on your own machine with no key.
  */
 
 const PRESETS: Record<string, { baseUrl: string; model: string; sttModel?: string; keyless?: boolean }> = {
@@ -17,6 +18,7 @@ const PRESETS: Record<string, { baseUrl: string; model: string; sttModel?: strin
   groq: { baseUrl: "https://api.groq.com/openai/v1", model: "llama-3.3-70b-versatile", sttModel: "whisper-large-v3-turbo" },
   openrouter: { baseUrl: "https://openrouter.ai/api/v1", model: "meta-llama/llama-3.3-70b-instruct:free" },
   ollama: { baseUrl: "http://localhost:11434/v1", model: "llama3.1", keyless: true },
+  "whisper-local": { baseUrl: "http://127.0.0.1:8001/v1", model: "", sttModel: "base.en", keyless: true },
 };
 
 export interface ProviderConfig {
