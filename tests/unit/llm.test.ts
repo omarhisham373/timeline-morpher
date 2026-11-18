@@ -112,4 +112,9 @@ describe("provider config", () => {
   it("STT reuses the LLM key and picks Groq Whisper", () => {
     expect(getSttConfig({ STT_PROVIDER: "groq", LLM_API_KEY: "x" })).toMatchObject({ model: "whisper-large-v3-turbo", apiKey: "x" });
   });
+  it("treats blank values from a copied .env.example as unset", () => {
+    const env = { LLM_PROVIDER: "gemini", LLM_API_KEY: "k", LLM_MODEL: "", LLM_BASE_URL: " ", LLM_TIMEOUT_MS: "", STT_PROVIDER: "groq", STT_API_KEY: "" };
+    expect(getLlmConfig(env)).toMatchObject({ model: "gemini-2.5-flash", timeoutMs: 15_000 });
+    expect(getSttConfig(env)).toMatchObject({ apiKey: "k" });
+  });
 });

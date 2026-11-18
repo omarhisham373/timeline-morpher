@@ -30,16 +30,18 @@ export interface ProviderConfig {
 
 type Env = Record<string, string | undefined>;
 
-function resolve(prefix: "LLM" | "STT", env: Env): ProviderConfig | null {
-  const provider = (env[`${prefix}_PROVIDER`] ?? "").trim().toLowerCase();
+function resolve(prefix: "LLM" | "STT", rawEnv: Env): ProviderConfig | null {
+  // Treat blank values (e.g. an untouched `LLM_MODEL=` from .env.example) as unset.
+  const env = (key: string) => rawEnv[key]?.trim() || undefined;
+  const provider = (env(`${prefix}_PROVIDER`) ?? "").toLowerCase();
   if (!provider || provider === "none" || provider === "local") return null;
   const preset = PRESETS[provider];
-  const baseUrl = env[`${prefix}_BASE_URL`] ?? preset?.baseUrl;
-  const model = env[`${prefix}_MODEL`] ?? (prefix === "STT" ? preset?.sttModel : preset?.model);
-  const apiKey = env[`${prefix}_API_KEY`] ?? (prefix === "STT" ? env.LLM_API_KEY : undefined);
+  const baseUrl = env(`${prefix}_BASE_URL`) ?? preset?.baseUrl;
+  const model = env(`${prefix}_MODEL`) ?? (prefix === "STT" ? preset?.sttModel : preset?.model);
+  const apiKey = env(`${prefix}_API_KEY`) ?? (prefix === "STT" ? env("LLM_API_KEY") : undefined);
   if (!baseUrl || !model) return null;
   if (!apiKey && !preset?.keyless && provider !== "custom") return null;
-  const timeoutMs = Number(env[`${prefix}_TIMEOUT_MS`]) || (preset?.keyless ? 90_000 : 15_000);
+  const timeoutMs = Number(env(`${prefix}_TIMEOUT_MS`)) || (preset?.keyless ? 90_000 : 15_000);
   return { provider, baseUrl: baseUrl.replace(/\/$/, ""), apiKey, model, timeoutMs };
 }
 
